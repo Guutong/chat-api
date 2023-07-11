@@ -48,7 +48,7 @@ func NewMessageHandler(service service.IMessageService) *MessageHandler {
 // @Accept json
 // @Produce json
 // @Param message body CreateMessage true "Create Message"
-// @Success 200 {object} string "ok"
+// @Success 200 {object} model.Message "ok"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/conversations/{conversationId}/messages [post]
@@ -81,7 +81,7 @@ func (h *MessageHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Message sent"})
+	c.JSON(http.StatusOK, message)
 }
 
 // List messages by conversation godoc

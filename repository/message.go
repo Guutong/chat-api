@@ -18,6 +18,9 @@ type IMessageRepository interface {
 
 	// Find a message by conversation id pagination
 	FindByConversationIDPagination(ctx context.Context, conversationID string, page int64, limit int64) ([]*model.Message, error)
+
+	// Find last message by conversation id
+	FindLastMessageByConversationID(ctx context.Context, conversationID string) (*model.Message, error)
 }
 
 // MessageRepository is a repository for message
@@ -76,4 +79,25 @@ func (r *MessageRepository) FindByConversationIDPagination(ctx context.Context, 
 	}
 
 	return messages, nil
+}
+
+// Find latest message by conversation id
+func (r *MessageRepository) FindLastMessageByConversationID(ctx context.Context, conversationID string) (*model.Message, error) {
+	var message *model.Message
+
+	filter := bson.M{"conversationId": conversationID}
+	opts := &options.FindOptions{
+		Sort: map[string]int{"createAt": -1},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &message); err != nil {
+		return nil, err
+	}
+
+	return message, nil
 }

@@ -1,225 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat App</title>
+  <title>Melody example: chatting</title>
   <style>
-    /* Styles for the chat app */
-    /* ... */
-
-    /* Styles for user listing */
-    /* ... */
-
-    /* Styles for chat room */
-    /* ... */
+    #chat {
+      text-align: left;
+      background: #f1f1f1;
+      width: 500px;
+      min-height: 300px;
+      padding: 20px;
+    }
   </style>
+
 </head>
 
 <body>
-  <div id="app">
-    <!-- Registration Page -->
-    <div id="registration" class="page">
-      <h1>Register</h1>
-      <input type="text" id="register-username" placeholder="Username">
-      <button id="register-button">Register</button>
-    </div>
-
-    <!-- Login Page -->
-    <div id="login" class="page">
-      <h1>Login</h1>
-      <input type="text" id="login-username" placeholder="Username">
-      <button id="login-button">Login</button>
-    </div>
-
-    <!-- User List Page -->
-    <div id="user-list" class="page">
-      <h1>User List</h1>
-      <ul id="users"></ul>
-    </div>
-
-    <!-- Chat Room Page -->
-    <div id="chat-room" class="page">
-      <h1 id="welcome-message"></h1>
-      <button id="logout-button">Logout</button>
-      <div id="messages-container"></div>
-      <input type="text" id="message-input" placeholder="Type your message...">
-      <button id="send-button">Send</button>
-    </div>
-  </div>
+  <center>
+    <h3>Chat</h3>
+    <pre id="chat"></pre>
+    <input placeholder="say something" id="text" type="text">
+  </center>
 
   <script>
-    // WebSocket connection URL
-    const socketURL = 'ws://localhost:8080/ws'; // Replace with your WebSocket URL
+    var userId = new URLSearchParams(window.location.search).get("userId");
+    var url = "ws://localhost:8080/ws?userId=" + userId;
+    var ws = new WebSocket(url);
+    var name = "Guest" + Math.floor(Math.random() * 1000);
 
-    // API base URL
-    const apiURL = 'http://localhost:8080'; // Replace with your API URL
+    var chat = document.getElementById("chat");
+    var text = document.getElementById("text");
 
-    // DOM elements
-    const appElement = document.getElementById('app');
-    const registrationElement = document.getElementById('registration');
-    const loginElement = document.getElementById('login');
-    const userListElement = document.getElementById('user-list');
-    const usersList = document.getElementById('users');
-    const chatRoomElement = document.getElementById('chat-room');
-    const welcomeMessageElement = document.getElementById('welcome-message');
-    const messagesContainer = document.getElementById('messages-container');
-    const messageInput = document.getElementById('message-input');
-    const sendButton = document.getElementById('send-button');
-    const logoutButton = document.getElementById('logout-button');
+    var now = function () {
+      var iso = new Date().toISOString();
+      return iso.split("T")[1].split(".")[0];
+    };
 
-    // WebSocket connection
-    const socket = new WebSocket(socketURL);
+    ws.onmessage = function (msg) {
+      var line = now() + " " + msg.data + "\n";
+      chat.innerText += line;
+    };
 
-    // User data
-    let user = null;
-
-    // Register user
-    const handleRegister = async () => {
-      const usernameInput = document.getElementById('register-username');
-      const username = usernameInput.value;
-
-      try {
-        const response = await fetch(`${apiURL}/register`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username })
-        });
-        const userData = await response.json();
-        user = userData;
-        showUserListPage();
-      } catch (error) {
-        console.error('Failed to register:', error);
+    text.onkeydown = function (e) {
+      if (e.keyCode === 13 && text.value !== "") {
+        ws.send("<" + name + "> " + text.value);
+        text.value = "";
       }
     };
 
-    // Login user
-    const handleLogin = async () => {
-      const usernameInput = document.getElementById('login-username');
-      const username = usernameInput.value;
-
-      try {
-        const response = await fetch(`${apiURL}/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username })
-        });
-        const userData = await response.json();
-        user = userData;
-        showUserListPage();
-      } catch (error) {
-        console.error('Failed to login:', error);
-      }
-    };
-
-    // Logout user
-    const handleLogout = async () => {
-      try {
-        await fetch(`${apiURL}/logout`, {
-          method: 'POST'
-        });
-        user = null;
-        showLoginPage();
-      } catch (error) {
-        console.error('Failed to logout:', error);
-      }
-    };
-
-    // Fetch all users
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(`${apiURL}/users`);
-        const usersData = await response.json();
-        usersData.forEach(user => {
-          const userItem = document.createElement('li');
-          userItem.textContent = user.username;
-          usersList.appendChild(userItem);
-        });
-      } catch (error) {
-        console.error('Failed to fetch users:', error);
-      }
-    };
-
-    // Fetch chat messages
-    const fetchChatMessages = async () => {
-      try {
-        const response = await fetch(`${apiURL}/messages?page=1&limit=25`);
-        const messagesData = await response.json();
-        messagesData.forEach(message => {
-          const messageItem = document.createElement('p');
-          messageItem.textContent = message.content;
-          messagesContainer.appendChild(messageItem);
-        });
-      } catch (error) {
-        console.error('Failed to fetch chat messages:', error);
-      }
-    };
-
-    // Send new message
-    const sendMessage = () => {
-      const message = {
-        senderId: user.id,
-        receiverId: 2, // Replace with the receiver's ID
-        content: messageInput.value
-      };
-      socket.send(JSON.stringify(message));
-      messageInput.value = '';
-    };
-
-    // Show registration page
-    const showRegistrationPage = () => {
-      appElement.className = '';
-      registrationElement.className = 'page';
-      loginElement.className = 'page hidden';
-      userListElement.className = 'page hidden';
-      chatRoomElement.className = 'page hidden';
-    };
-
-    // Show login page
-    const showLoginPage = () => {
-      appElement.className = '';
-      registrationElement.className = 'page hidden';
-      loginElement.className = 'page';
-      userListElement.className = 'page hidden';
-      chatRoomElement.className = 'page hidden';
-    };
-
-    // Show user list page
-    const showUserListPage = () => {
-      appElement.className = '';
-      registrationElement.className = 'page hidden';
-      loginElement.className = 'page hidden';
-      userListElement.className = 'page';
-      chatRoomElement.className = 'page hidden';
-    };
-
-    // Show chat room page
-    const showChatRoomPage = () => {
-      appElement.className = '';
-      registrationElement.className = 'page hidden';
-      loginElement.className = 'page hidden';
-      userListElement.className = 'page hidden';
-      chatRoomElement.className = 'page';
-    };
-
-    // Handle WebSocket messages
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      const messageItem = document.createElement('p');
-      messageItem.textContent = message.content;
-      messagesContainer.appendChild(messageItem);
-    };
-
-    // Add event listeners
-    document.getElementById('register-button').addEventListener('click', handleRegister);
-    document.getElementById('login-button').addEventListener('click', handleLogin);
-    document.getElementById('logout-button').addEventListener('click', handleLogout);
-    sendButton.addEventListener('click', sendMessage);
   </script>
 </body>
 

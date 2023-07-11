@@ -16,6 +16,9 @@ type IMessageService interface {
 
 	// Find a message by conversation id pagination
 	FindByConversationIDPagination(ctx context.Context, conversationID string, page int64, limit int64) ([]*model.Message, error)
+
+	// Find last message by conversation id
+	FindLastMessageByConversationID(ctx context.Context, conversationID string) (*model.Message, error)
 }
 
 // MessageService is a service for message
@@ -43,4 +46,9 @@ func (s *MessageService) FindByConversationID(ctx context.Context, conversationI
 // Find a message by conversation id pagination
 func (s *MessageService) FindByConversationIDPagination(ctx context.Context, conversationID string, page int64, limit int64) ([]*model.Message, error) {
 	return s.repository.FindByConversationIDPagination(ctx, conversationID, page, limit)
+}
+
+// Find last message by conversation id
+func (s *MessageService) FindLastMessageByConversationID(ctx context.Context, conversationID string) (*model.Message, error) {
+	return s.repository.FindLastMessageByConversationID(ctx, conversationID)
 }

@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/guutong/chat-backend/model"
@@ -65,9 +67,14 @@ func (r *ConversationRepository) Create(ctx context.Context, conversation *model
 // Find a conversation by user id
 func (r *ConversationRepository) FindByUserID(ctx context.Context, userID string) ([]*model.Conversation, error) {
 	conversations := []*model.Conversation{}
+	id, _ := primitive.ObjectIDFromHex(userID)
 	filter := bson.M{
 		"members": bson.M{
-			"$in": []string{userID},
+			"$elemMatch": bson.M{
+				"_id": bson.M{
+					"$in": []primitive.ObjectID{id},
+				},
+			},
 		},
 	}
 	cursor, err := r.collection.Find(ctx, filter)
@@ -85,12 +92,17 @@ func (r *ConversationRepository) FindByUserID(ctx context.Context, userID string
 // Find a conversation by user id pagination
 func (r *ConversationRepository) FindByUserIDPagination(ctx context.Context, userID string, page int64, limit int64) ([]*model.Conversation, error) {
 	var conversations []*model.Conversation
-
+	id, _ := primitive.ObjectIDFromHex(userID)
 	filter := bson.M{
 		"members": bson.M{
-			"$in": []string{userID},
+			"$elemMatch": bson.M{
+				"_id": bson.M{
+					"$in": []primitive.ObjectID{id},
+				},
+			},
 		},
 	}
+
 	opts := &options.FindOptions{
 		Skip:  &page,
 		Limit: &limit,
@@ -141,13 +153,27 @@ func (r *ConversationRepository) Join(ctx context.Context, conversationID string
 // Find a conversation by pair of user id
 func (r *ConversationRepository) FindByPair(ctx context.Context, userID string, recipientID string) (*model.Conversation, error) {
 	var conversation *model.Conversation
+	id, _ := primitive.ObjectIDFromHex(userID)
+	recipient, _ := primitive.ObjectIDFromHex(recipientID)
 	filter := bson.M{
-		"members": bson.M{
-			"$all": []string{userID, recipientID},
+		"members._id": bson.M{
+			"$all": []primitive.ObjectID{id, recipient},
 		},
 	}
+
+	// filter := bson.M{
+	// 	"members": bson.M{
+	// 		"$all": []string{userID, recipientID},
+	// 	},
+	// }
 	if err := r.collection.FindOne(ctx, filter).Decode(&conversation); err != nil {
+		fmt.Println(err)
 		return nil, err
+	}
+
+	fmt.Println(conversation)
+	if conversation == nil {
+		return nil, errors.New("conversation not found")
 	}
 
 	return conversation, nil

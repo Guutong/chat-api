@@ -144,7 +144,14 @@ func (h *UserHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	responses := []model.User{}
+	for _, user := range users {
+		if user.ID.Hex() != c.GetString("userId") {
+			responses = append(responses, *user)
+		}
+	}
+
+	c.JSON(http.StatusOK, responses)
 }
 
 func hashedPassword(password string) string {

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/guutong/chat-backend/model"
@@ -11,6 +12,14 @@ import (
 // CreateConversation is a struct for creating a new conversation
 type CreateConversation struct {
 	RecipientID string `json:"recipientId" binding:"required"`
+}
+
+type ConversationResponse struct {
+	ID            string         `json:"id"`
+	Members       []model.User   `json:"members"`
+	CreateAt      *time.Time     `json:"createAt"`
+	LatestMessage *model.Message `json:"latestMessage"`
+	Recipient     *model.User    `json:"recipient"`
 }
 
 // IConversationHandler is an interface for conversation handlers
@@ -27,13 +36,21 @@ type IConversationHandler interface {
 
 // ConversationHandler is a handler for conversation
 type ConversationHandler struct {
-	service service.IConversationService
+	service        service.IConversationService
+	userService    service.IUserService
+	messageService service.IMessageService
 }
 
 // NewConversationHandler creates a new conversation handler
-func NewConversationHandler(service service.IConversationService) *ConversationHandler {
+func NewConversationHandler(
+	service service.IConversationService,
+	userService service.IUserService,
+	messageService service.IMessageService,
+) *ConversationHandler {
 	return &ConversationHandler{
-		service: service,
+		service:        service,
+		userService:    userService,
+		messageService: messageService,
 	}
 }
 
@@ -76,8 +93,21 @@ func (h *ConversationHandler) Create(c *gin.Context) {
 		return
 	}
 
+	user, err := h.userService.FindByID(c, userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if the recipient exists
+	recipient, err := h.userService.FindByID(c, createConversation.RecipientID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid recipient"})
+		return
+	}
+
 	create := &model.Conversation{
-		Members: []string{userID.(string), createConversation.RecipientID},
+		Members: []model.User{*user, *recipient},
 	}
 
 	// Create a new conversation
@@ -100,7 +130,7 @@ func (h *ConversationHandler) Create(c *gin.Context) {
 // @Param userId path string true "User ID"
 // @Success 200 {object} string "ok"
 // @Failure 500 {object} string "Internal server error"
-// @Router /api/users/{userId}/conversations [get]
+// @Router /api/users/conversations [get]
 func (h *ConversationHandler) GetAllConversationsByUser(c *gin.Context) {
 	userID, exists := c.Get("userId")
 	if !exists {
@@ -114,7 +144,25 @@ func (h *ConversationHandler) GetAllConversationsByUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, conversations)
+	// Get the latest message of each conversation
+	responses := make([]ConversationResponse, len(conversations))
+	for i, conversation := range conversations {
+		latestMessage, _ := h.messageService.FindLastMessageByConversationID(c, conversation.ID.Hex())
+		recipient := conversation.Members[0]
+		if recipient.ID.Hex() == userID.(string) {
+			recipient = conversation.Members[1]
+		}
+
+		responses[i] = ConversationResponse{
+			ID:            conversation.ID.Hex(),
+			Members:       conversation.Members,
+			CreateAt:      conversation.CreateAt,
+			LatestMessage: latestMessage,
+			Recipient:     &recipient,
+		}
+	}
+
+	c.JSON(http.StatusOK, responses)
 }
 
 // Join a conversation godoc
