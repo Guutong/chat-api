@@ -1,54 +1,39 @@
 # Register
-POST http://localhost:8080/register
+POST http://localhost:8080/api/users/register
 Content-Type: application/json
 
 {
-  "username": "test3",
-  "password": "test3",
+  "username": "test",
+  "password": "test",
   "profilePicture": "test"
 }
+
 ###
 # Login
-POST http://localhost:8080/login
+POST http://localhost:8080/api/users/login
 Content-Type: application/json
 
 {
-  "username": "test2",
-  "password": "test2"
+  "username": "test",
+  "password": "test"
 }
 
 ###
 # Get all users
-GET http://localhost:8080/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
+GET http://localhost:8080/api/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkxMzgyMTUsInVzZXJJZCI6IjY0YWNkZWZlYWZiMDBmOTUxNmU3NDUxNyJ9.zon79ppby-ZHHb6H0QcI3mYBDYXyUsPCv7fXlvpdXBg
 
+###
+# Get a user conversation
+GET http://localhost:8080/api/users/conversations
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkxMzgyMTUsInVzZXJJZCI6IjY0YWNkZWZlYWZiMDBmOTUxNmU3NDUxNyJ9.zon79ppby-ZHHb6H0QcI3mYBDYXyUsPCv7fXlvpdXBg
 
 ###
 # Create a conversation
-POST http://localhost:8080/conversations
+POST http://localhost:8080/api/conversations
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkxMzgyMTUsInVzZXJJZCI6IjY0YWNkZWZlYWZiMDBmOTUxNmU3NDUxNyJ9.zon79ppby-ZHHb6H0QcI3mYBDYXyUsPCv7fXlvpdXBg
 
 {
-  "recipientId": "64ac3c0aae57ea3686a4c220"
-}
-
-###
-# Get conversations by user
-GET http://localhost:8080/conversations/64ac3b45e695c01016aaf0ec
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
-
-###
-# Get messages by conversation
-GET http://localhost:8080/messages/64ac3c4cbfe84efae65ce44f
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
-
-###
-# Send a message
-POST http://localhost:8080/messages/64ac3c4cbfe84efae65ce44f
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
-
-{
-  "text": "Hello"
+  "recipientId": "64ac3c0aae57ea3686a4c22w0"
 }

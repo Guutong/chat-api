@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Parse the JWT token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Provide the secret key used for signing the token
-			return []byte("chat_app_secret"), nil // Replace with your own secret key
+			return []byte(os.Getenv("JWT_SECRET")), nil // Replace with your own secret key
 		})
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
