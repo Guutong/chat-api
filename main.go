@@ -66,11 +66,11 @@ func main() {
 	// cors allow all
 	r.Use(cors.Default())
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	api := r.Group("/api")
+	api.POST("/register", register)
+	api.POST("/login", login)
 
-	r.POST("/register", register)
-	r.POST("/login", login)
-
-	authRoute := r.Group("/")
+	authRoute := api.Group("/")
 	authRoute.Use(middleware.AuthMiddleware())
 	authRoute.GET("/users", listUsers)
 	authRoute.POST("/conversations", createConversation)
