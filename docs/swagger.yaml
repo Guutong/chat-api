@@ -1,0 +1,60 @@
+basePath: /
+definitions:
+  model.User:
+    properties:
+      createAt:
+        type: string
+      id:
+        type: string
+      password:
+        type: string
+      profilePicture:
+        type: string
+      updateAt:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample chat application API.
+  title: Chat API
+  version: "1"
+paths:
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: User registered successfully'
+          schema:
+            type: string
+        "400":
+          description: 'error: Invalid request payload'
+          schema:
+            type: string
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Register a new user
+      tags:
+      - users
+schemes:
+- http
+- https
+swagger: "2.0"

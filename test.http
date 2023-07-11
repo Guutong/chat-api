@@ -1,0 +1,54 @@
+# Register
+POST http://localhost:8080/register
+Content-Type: application/json
+
+{
+  "username": "test3",
+  "password": "test3",
+  "profilePicture": "test"
+}
+###
+# Login
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "username": "test2",
+  "password": "test2"
+}
+
+###
+# Get all users
+GET http://localhost:8080/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
+
+
+###
+# Create a conversation
+POST http://localhost:8080/conversations
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
+
+{
+  "recipientId": "64ac3c0aae57ea3686a4c220"
+}
+
+###
+# Get conversations by user
+GET http://localhost:8080/conversations/64ac3b45e695c01016aaf0ec
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
+
+###
+# Get messages by conversation
+GET http://localhost:8080/messages/64ac3c4cbfe84efae65ce44f
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
+
+###
+# Send a message
+POST http://localhost:8080/messages/64ac3c4cbfe84efae65ce44f
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODkwOTU1MTksInVzZXJJZCI6IjY0YWMzYjQ1ZTY5NWMwMTAxNmFhZjBlYyJ9.inS-0Y0Pwqfc6ijqtf2py9MBixl0BQfY9-cdynqpmhI
+
+{
+  "text": "Hello"
+}
