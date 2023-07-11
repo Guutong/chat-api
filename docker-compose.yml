@@ -8,6 +8,9 @@ services:
       - 80:80
   app:
     build: .
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - JWT_SECRET=chatsecret
     volumes:
       - .:/app
     ports:
