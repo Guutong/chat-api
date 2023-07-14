@@ -96,10 +96,10 @@ func main() {
 	userApi.GET("/conversations", middleware.AuthMiddleware(), conversationHandler.GetAllConversationsByUser)
 
 	conversationRoute.POST("", middleware.AuthMiddleware(), conversationHandler.Create)
-	conversationRoute.POST("/:id/join", middleware.AuthMiddleware(), conversationHandler.Join)
-	conversationRoute.POST("/:id/messages", middleware.AuthMiddleware(), messageHandler.Create)
-	conversationRoute.GET("/:id/messages", middleware.AuthMiddleware(), messageHandler.ListMessagesByConversation)
-	conversationRoute.GET("/:id/messages/pagination", middleware.AuthMiddleware(), messageHandler.ListMessagesByConversationPagination)
+	conversationRoute.POST("/:conversationId/join", middleware.AuthMiddleware(), conversationHandler.Join)
+	conversationRoute.POST("/:conversationId/messages", middleware.AuthMiddleware(), messageHandler.Create)
+	conversationRoute.GET("/:conversationId/messages", middleware.AuthMiddleware(), messageHandler.ListMessagesByConversation)
+	conversationRoute.GET("/:conversationId/messages/pagination", middleware.AuthMiddleware(), messageHandler.ListMessagesByConversationPagination)
 
 	// 1 user A see the users list B C D E
 	// 2 user A click on a user B
