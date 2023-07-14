@@ -7,12 +7,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/guutong/chat-backend/handler"
 	"github.com/guutong/chat-backend/middleware"
 	"github.com/guutong/chat-backend/model"
@@ -111,43 +109,40 @@ func main() {
 	m := melody.New()
 	m.Config.MaxMessageSize = 2000
 	m.Upgrader.CheckOrigin = func(r *http.Request) bool { return true } // origni check
-	socketUsers := make(map[*melody.Session]*SocketUser)
-	lock := new(sync.Mutex)
-
 	r.GET("/ws", func(c *gin.Context) {
 		m.HandleRequest(c.Writer, c.Request)
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		fmt.Println(s.Request.URL.Query().Get("userId"))
-		fmt.Println(string(msg))
+		fmt.Println(s.Request.URL.Query().Get("userId"), string(msg))
 		var message SocketMessage
 		json.Unmarshal(msg, &message)
 
 		switch message.Event {
 		case "addUser":
-			lock.Lock()
-			userID := s.Request.URL.Query().Get("userId")
-			newUser := SocketUser{
-				ID:   userID,
-				UUID: uuid.New().String(),
+			socketUsers := []string{}
+			sessions, _ := m.Sessions()
+			for _, session := range sessions {
+				userID := session.Request.URL.Query().Get("userId")
+				if userID != "" {
+					socketUsers = append(socketUsers, userID)
+				}
 			}
-			s.Set("data", newUser)
-			socketUsers[s] = &newUser
-			lock.Unlock()
 
-			msg := SocketMessage{
+			bmsg := SocketMessage{
 				Event:   "getUsers",
 				Message: socketUsers,
 			}
 
-			b, _ := json.Marshal(msg)
-			m.Broadcast(b)
+			b, _ := json.Marshal(bmsg)
+			m.BroadcastFilter(b, func(q *melody.Session) bool {
+				return q != s
+			})
 		case "sendMessage":
 			var data SocketData
 			_ = mapstructure.Decode(message.Message, &data)
 
-			msg := SocketMessage{
+			bmsg := SocketMessage{
 				Event: "getMessage",
 				Message: model.Message{
 					ID:             primitive.NewObjectID(),
@@ -157,26 +152,17 @@ func main() {
 					CreateAt:       time.Now(),
 				},
 			}
-			b, _ := json.Marshal(msg)
+
+			b, _ := json.Marshal(bmsg)
 			m.BroadcastFilter(b, func(q *melody.Session) bool {
-				ss, _ := m.Sessions()
-				for _, s := range ss {
-					if s.Request.URL.Query().Get("userId") == data.RecipientID {
-						fmt.Println("send to", s.Request.URL.Query().Get("userId"))
-						return true
-					}
-				}
-				return false
+				return q.Request.URL.Query().Get("userId") == data.RecipientID
 			})
 		}
 	})
 
 	m.HandleDisconnect(func(s *melody.Session) {
 		fmt.Println("disconnect")
-		lock.Lock()
-		socketUsers[s] = nil
 		s.UnSet("data")
-		lock.Unlock()
 	})
 
 	r.Run(":8080")

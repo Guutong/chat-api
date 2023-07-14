@@ -86,13 +86,6 @@ func (h *ConversationHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// check if pair conversation already exists return pair conversation
-	conversation, err := h.service.FindByPair(c, userID.(string), createConversation.RecipientID)
-	if err == nil {
-		c.JSON(http.StatusOK, conversation)
-		return
-	}
-
 	user, err := h.userService.FindByID(c, userID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -108,6 +101,19 @@ func (h *ConversationHandler) Create(c *gin.Context) {
 
 	user.Password = ""
 	recipient.Password = ""
+
+	// check if pair conversation already exists return pair conversation
+	conversation, err := h.service.FindByPair(c, userID.(string), createConversation.RecipientID)
+	if err == nil {
+		c.JSON(http.StatusOK, ConversationResponse{
+			ID:            conversation.ID.Hex(),
+			Members:       conversation.Members,
+			CreateAt:      conversation.CreateAt,
+			LatestMessage: nil,
+			Recipient:     recipient,
+		})
+		return
+	}
 
 	create := &model.Conversation{
 		Members: []model.User{*user, *recipient},
