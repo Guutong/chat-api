@@ -117,7 +117,13 @@ func (h *ConversationHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, created)
+	c.JSON(http.StatusOK, ConversationResponse{
+		ID:            created.ID.Hex(),
+		Members:       created.Members,
+		CreateAt:      created.CreateAt,
+		LatestMessage: nil,
+		Recipient:     recipient,
+	})
 }
 
 // List conversations by user godoc
@@ -190,5 +196,23 @@ func (h *ConversationHandler) Join(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Joined"})
+	conversation, err := h.service.FindByID(c, conversationID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	latestMessage, _ := h.messageService.FindLastMessageByConversationID(c, conversation.ID.Hex())
+	recipient := conversation.Members[0]
+	if recipient.ID.Hex() == userID.(string) {
+		recipient = conversation.Members[1]
+	}
+
+	c.JSON(http.StatusOK, ConversationResponse{
+		ID:            conversation.ID.Hex(),
+		Members:       conversation.Members,
+		CreateAt:      conversation.CreateAt,
+		LatestMessage: latestMessage,
+		Recipient:     &recipient,
+	})
 }

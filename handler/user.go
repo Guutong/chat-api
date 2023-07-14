@@ -35,6 +35,9 @@ type IUserHandler interface {
 
 	// Get all users
 	GetAll(c *gin.Context)
+
+	// Get user by id
+	GetUserByID(c *gin.Context)
 }
 
 // UserHandler is a handler for user
@@ -178,4 +181,26 @@ func generateToken(userID string, jwtSecret string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+// GetUserByID godoc
+// @Summary Get user by id
+// @Description Get user by id
+// @Security Bearer
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path string true "User ID"
+// @Success 200 {object} string "ok"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/users/{id} [get]
+func (h *UserHandler) GetUserByID(c *gin.Context) {
+	userID := c.Param("id")
+	user, err := h.service.FindByID(c, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }
