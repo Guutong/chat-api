@@ -106,6 +106,9 @@ func (h *ConversationHandler) Create(c *gin.Context) {
 		return
 	}
 
+	user.Password = ""
+	recipient.Password = ""
+
 	create := &model.Conversation{
 		Members: []model.User{*user, *recipient},
 	}
