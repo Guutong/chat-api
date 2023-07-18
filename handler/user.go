@@ -37,7 +37,7 @@ type IUserHandler interface {
 	GetAll(c *gin.Context)
 
 	// Get user by id
-	GetUserByID(c *gin.Context)
+	GetProfile(c *gin.Context)
 }
 
 // UserHandler is a handler for user
@@ -183,20 +183,24 @@ func generateToken(userID string, jwtSecret string) (string, error) {
 	return tokenString, nil
 }
 
-// GetUserByID godoc
-// @Summary Get user by id
-// @Description Get user by id
+// GetProfile godoc
+// @Summary Get user profile
+// @Description Get user profile
 // @Security Bearer
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param id path string true "User ID"
 // @Success 200 {object} string "ok"
 // @Failure 500 {object} string "Internal server error"
-// @Router /api/users/{id} [get]
-func (h *UserHandler) GetUserByID(c *gin.Context) {
-	userID := c.Param("id")
-	user, err := h.service.FindByID(c, userID)
+// @Router /api/users/me [get]
+func (h *UserHandler) GetProfile(c *gin.Context) {
+	userID, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	user, err := h.service.FindByID(c, userID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

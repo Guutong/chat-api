@@ -89,6 +89,7 @@ func main() {
 	conversationRoute := api.Group("/conversations")
 
 	userApi.GET("", middleware.AuthMiddleware(), userHandler.GetAll)
+	userApi.GET("/me", middleware.AuthMiddleware(), userHandler.GetProfile)
 	userApi.POST("/register", userHandler.Register)
 	userApi.POST("/login", userHandler.Login)
 	userApi.GET("/conversations", middleware.AuthMiddleware(), conversationHandler.GetAllConversationsByUser)
